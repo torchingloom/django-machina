@@ -52,7 +52,8 @@ class ForumPermissionChecker(object):
             elif self.user:
                 default_auth_forum_perms = \
                     machina_settings.DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS
-                if self.user.groups.count():
+                if not self.user.is_anonymous() and (
+                        self.user.groups.exists() or UserForumPermission.objects.filter(user=self.user).exists()):
                     default_auth_forum_perms = []
 
                 user_kwargs_filter = {'anonymous_user': True} if self.user.is_anonymous() \

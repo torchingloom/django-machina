@@ -118,6 +118,7 @@ class ForumProfileUpdateView(UpdateView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        return HttpResponseRedirect(request.user.get_profile_edit_url())
         return super(ForumProfileUpdateView, self).dispatch(request, *args, **kwargs)
 
 

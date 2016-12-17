@@ -36,6 +36,7 @@
         <div class="row">
           <div class="col-md-12">
             {% include "partials/form_field.html" with field=post_form.topic_type %}
+          {% comment %}
             {% with field=post_form.enable_signature %}
             <div class="checkbox">
               <label for="{{ field.auto_id }}">
@@ -44,6 +45,7 @@
               </label>
             </div>
             {% endwith %}
+            {% endcomment %}
             {% if post_form.lock_topic %}
             {% with field=post_form.lock_topic %}
             <div class="checkbox">

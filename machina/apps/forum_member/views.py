@@ -5,7 +5,9 @@ from __future__ import unicode_literals
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseNotAllowed
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -70,6 +72,14 @@ class ForumProfileDetailView(DetailView):
     template_name = 'forum_member/forum_profile_detail.html'
     context_object_name = 'profile'
 
+    def post(self, request, *args, **kwargs):
+        if not self.request.forum_permission_handler.can_manage_users_groups(self.request.user):
+            return HttpResponseNotAllowed('')
+        user = self.get_object().user
+        user.groups.clear()
+        user.groups.add(*request.POST.getlist('groups'))
+        return self.get(request, *args, **kwargs)
+
     def get_queryset(self):
         user_model = get_user_model()
         return user_model.objects.all()
@@ -92,6 +102,12 @@ class ForumProfileDetailView(DetailView):
         recent_posts = Post.approved_objects.filter(
             topic__forum__in=forums, poster=self.object.user).order_by('-created')
         context['recent_posts'] = recent_posts[:machina_settings.PROFILE_RECENT_POSTS_NUMBER]
+
+        if self.request.forum_permission_handler.can_manage_users_groups(self.request.user):
+            context['user_groups_selected'] = self.object.user.groups.all()
+            context['user_groups_selected_ids'] = [o.id for o in context['user_groups_selected']]
+            context['user_groups_all'] = Group.objects.all()
+            context['can_manage_users_groups'] = Group.objects.all()
 
         return context
 

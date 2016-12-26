@@ -101,6 +101,12 @@ class PermissionHandler(object):
         """
         return self._perform_basic_permission_check(forum, user, 'can_post_stickies')
 
+    def can_manage_users_groups(self, user):
+        """
+        Given a forum, checks whether the user can append stickies to it.
+        """
+        return self._perform_basic_permission_check(Forum(id=-1), user, 'can_manage_users_groups')
+
     def can_add_announcements(self, forum, user):
         """
         Given a forum, checks whether the user can append announcements to it.

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from django.core.exceptions import ValidationError
-from faker import Factory as FakerFactory
 import pytest
+from django.core.exceptions import ValidationError
+from faker import Faker
 
 from machina.core import validators
 
-faker = FakerFactory.create()
+faker = Faker()
 
 
 class TestNullableMaxLengthValidator(object):

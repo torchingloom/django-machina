@@ -2,23 +2,23 @@
 
 from __future__ import unicode_literals
 
+import pytest
 from django import forms
 from django.contrib.auth.models import AnonymousUser
-from faker import Factory as FakerFactory
-import pytest
+from faker import Faker
 
 from machina.apps.forum_conversation.forms import PostForm
 from machina.apps.forum_conversation.forms import TopicForm
 from machina.conf import settings as machina_settings
 from machina.core.db.models import get_model
 from machina.core.loading import get_class
-from machina.test.factories import create_forum
-from machina.test.factories import create_topic
 from machina.test.factories import PostFactory
 from machina.test.factories import TopicPollFactory
 from machina.test.factories import UserFactory
+from machina.test.factories import create_forum
+from machina.test.factories import create_topic
 
-faker = FakerFactory.create()
+faker = Faker()
 
 ForumReadTrack = get_model('forum_tracking', 'ForumReadTrack')
 Post = get_model('forum_conversation', 'Post')
@@ -218,6 +218,28 @@ class TestPostForm(object):
         post = form.save()
         post.refresh_from_db()
         assert not post.topic.is_locked
+
+    def test_cannot_overwrite_the_original_poster_when_a_post_is_edited_by_another_user(self):
+        # Setup
+        user = UserFactory.create()
+        assign_perm('can_read_forum', user, self.top_level_forum)
+        assign_perm('can_start_new_topics', user, self.top_level_forum)
+        form_data = {
+            'subject': faker.text(max_nb_chars=200),
+            'content': faker.text(),
+        }
+        # Run
+        form = PostForm(
+            data=form_data,
+            user=user,
+            user_ip=faker.ipv4(),
+            forum=self.top_level_forum,
+            topic=self.topic,
+            instance=self.post)
+        # Check
+        assert form.is_valid()
+        post = form.save()
+        assert post.poster == self.user
 
 
 @pytest.mark.django_db

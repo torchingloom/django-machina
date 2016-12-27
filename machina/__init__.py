@@ -3,8 +3,7 @@
 from __future__ import unicode_literals
 import os
 
-# sorry for deploy
-__version__ = '0.4.1.dev-ta'
+__version__ = '0.5.0'
 
 
 MACHINA_VANILLA_APPS = [

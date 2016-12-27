@@ -2,22 +2,22 @@
 
 from __future__ import unicode_literals
 
-from django.core.urlresolvers import reverse
-from faker import Factory as FakerFactory
 import pytest
+from django.core.urlresolvers import reverse
+from faker import Faker
 
 from machina.core.db.models import get_model
 from machina.core.loading import get_class
-from machina.test.factories import create_forum
-from machina.test.factories import create_topic
 from machina.test.factories import ForumReadTrackFactory
 from machina.test.factories import PostFactory
 from machina.test.factories import TopicPollFactory
 from machina.test.factories import TopicPollOptionFactory
 from machina.test.factories import TopicPollVoteFactory
+from machina.test.factories import create_forum
+from machina.test.factories import create_topic
 from machina.test.testcases import BaseClientTestCase
 
-faker = FakerFactory.create()
+faker = Faker()
 
 ForumReadTrack = get_model('forum_tracking', 'ForumReadTrack')
 Post = get_model('forum_conversation', 'Post')

@@ -2,13 +2,13 @@
 
 from __future__ import unicode_literals
 
-from django.test import RequestFactory
-from faker import Factory as FakerFactory
 import pytest
+from django.test import RequestFactory
+from faker import Faker
 
 from machina.apps.forum_conversation.utils import get_client_ip
 
-faker = FakerFactory.create()
+faker = Faker()
 
 
 @pytest.mark.django_db

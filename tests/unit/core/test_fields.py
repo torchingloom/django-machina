@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-try:
-    from imp import reload
-except ImportError:
-    pass
 
+import pytest
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -13,21 +10,24 @@ from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.utils.encoding import force_text
 from django.utils.six import BytesIO
-import pytest
+from tests.models import RESIZED_IMAGE_HEIGHT
+from tests.models import RESIZED_IMAGE_WIDTH
+from tests.models import DummyModel
 
 from machina.conf import settings as machina_settings
 from machina.core.compat import PILImage as Image
 from machina.models import fields
-from tests.models import RESIZED_IMAGE_HEIGHT
-from tests.models import RESIZED_IMAGE_WIDTH
-from tests.models import DummyModel
+
+try:
+    from imp import reload
+except ImportError:
+    pass
 
 
 @pytest.mark.django_db
 class TestMarkupTextField(object):
     MARKUP_TEXT_FIELD_TESTS = (
         ('**hello _world!_**', '<p><strong>hello <em>world!</em></strong></p>'),
-        ('[goto google](http://google.com)', '<p><a href="http://google.com">goto google</a></p>'),
         ('**안녕하세요**', '<p><strong>안녕하세요</strong></p>'),
     )
 

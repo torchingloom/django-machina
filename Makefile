@@ -1,6 +1,11 @@
 staticfiles:
 	npm run gulp
 
+messages:
+	cd machina && django-admin.py makemessages -a
+
+compiledmessages:
+	cd machina && django-admin.py compilemessages
 
 .PHONY: install upgrade lint coverage travis docs
 
@@ -15,13 +20,16 @@ upgrade:
 lint:
 	flake8
 
+isort:
+	isort --check-only --recursive --diff machina tests
+
 coverage:
 	py.test --cov-report term-missing --cov machina
 
 spec:
 	py.test --spec -p no:sugar
 
-travis: install lint coverage
+travis: install lint isort coverage
 
 docs:
 	cd docs && rm -rf _build && make html

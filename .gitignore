@@ -16,6 +16,7 @@ node_modules/
 npm-debug.log
 tests/_testdata/media/machina
 tests/settings_local.py
+.idea
 
 # If pipeline is used, don't commit generated CSS files
 machina/static/machina/less/*.css

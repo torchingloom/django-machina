@@ -50,3 +50,7 @@ class MarkdownTextareaWidget(Textarea):
         classes = attrs.get('classes', '')
         attrs['class'] = classes + ' machina-mde-markdown'
         return super(MarkdownTextareaWidget, self).render(name, value, attrs)
+
+
+class PostContentWidget(Textarea):
+    pass

@@ -9,13 +9,14 @@ from django.db.models import Q
 from django.utils.encoding import force_text
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
+from django.utils.text import slugify
 
 from machina.conf import settings as machina_settings
 from machina.core import validators
-from machina.core.compat import slugify
 from machina.core.loading import get_class
 from machina.models.abstract_models import DatedModel
 from machina.models.fields import MarkupTextField
+
 
 ApprovedManager = get_class('forum_conversation.managers', 'ApprovedManager')
 
@@ -95,6 +96,10 @@ class AbstractTopic(DatedModel):
 
     def __str__(self):
         return self.first_post.subject if self.first_post is not None else str(self.id)
+
+    @property
+    def get_slug(self):
+        return slugify(self.slug)
 
     @property
     def is_topic(self):
@@ -208,7 +213,7 @@ class AbstractPost(DatedModel):
 
     # Each post can have its own subject. The subject of the thread corresponds to the
     # one associated with the first post
-    subject = models.CharField(verbose_name=_('Subject'), max_length=255)
+    subject = models.CharField(verbose_name=_('Subject'), max_length=machina_settings.POST_SUBJECT_MAX_LENGTH)
 
     # Content
     content = MarkupTextField(

@@ -77,7 +77,8 @@
                             {% for result in page.object_list %}
                                 <tr>
                                     <td class="post-name">
-                                        <a href="{% url 'forum_conversation:topic' result.forum_slug result.forum result.topic_slug result.topic %}" class="topic-name-link">{{ result.topic_subject }}</a>
+                                    {% url 'forum_conversation:topic' result.forum_slug result.forum result.topic_slug result.topic as this_url %}
+                                        <a href="{{ this_url }}" class="topic-name-link">{{ result.topic_subject }}</a>
                                         <div>
                                             <div class="post-created">
                                               {% if result.poster %}

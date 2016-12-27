@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 from django import forms
 from django.forms.models import BaseModelFormSet
 from django.forms.models import modelformset_factory
+from django.utils.translation import ugettext_lazy as _
+from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 
 from machina.conf import settings as machina_settings
 from machina.core.db.models import get_model
@@ -16,6 +18,18 @@ class AttachmentForm(forms.ModelForm):
     class Meta:
         model = Attachment
         fields = ['file', 'comment', ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.fields['file'].widget.attrs['accept'] = 'audio/*,video/*,image/*'
+
+    def clean_file(self):
+        f = self.cleaned_data.get('file', None)
+        if not isinstance(f, (InMemoryUploadedFile, TemporaryUploadedFile)):
+            return f
+        if f.content_type.split('/')[0] not in ['image', 'video', 'audio']:
+            raise forms.ValidationError(_(u'File type is not supported'))
+        return f
 
 
 class BaseAttachmentFormset(BaseModelFormSet):

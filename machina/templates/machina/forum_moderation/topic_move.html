@@ -21,7 +21,8 @@
                             </label>
                         </div>
 				        <input type="submit" value="{% trans "Move" %}" class="btn btn-warning" />
-				        <a href="{% url 'forum_conversation:topic' topic.forum.slug topic.forum.pk topic.slug topic.pk %}" class="btn">{% trans "Cancel" %}</a>
+                        {% url 'forum_conversation:topic' topic.forum.slug topic.forum.pk topic.slug topic.pk as this_url %}
+				        <a href="{{ this_url }}" class="btn">{% trans "Cancel" %}</a>
 				    </form>
 	            </div>
 			</div>

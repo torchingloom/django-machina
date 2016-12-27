@@ -1,6 +1,6 @@
 {% load i18n %}
-
-<form method="post" action="{% url 'forum_conversation:topic_poll_vote' poll.pk %}" class="form" novalidate>
+{% url 'forum_conversation:topic_poll_vote' poll.pk as this_url %}
+<form method="post" action="{{ this_url }}" class="form" novalidate>
 	{% csrf_token %}
 
 	{% for option in poll_form.options.field.queryset %}

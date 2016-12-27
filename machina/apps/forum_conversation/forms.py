@@ -24,7 +24,10 @@ get_anonymous_user_forum_key = get_class(
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['subject', 'content', 'username', 'update_reason', 'enable_signature', ]
+        fields = [
+            'subject', 'content', 'username', 'update_reason',
+            # 'enable_signature',
+        ]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -64,16 +67,18 @@ class PostForm(forms.ModelForm):
         # Inserts a field to allow the user to lock the current topic if he has the permissions to
         # do so.
         if (self.instance.pk or self.topic) \
-                and self.perm_handler.can_lock_topics(self.forum, self.user):
+            and self.perm_handler.can_lock_topics(self.forum, self.user):
             self.fields['lock_topic'] = forms.BooleanField(
                 label=_('Lock topic'), required=False,
                 initial=self.topic.status == Topic.TOPIC_LOCKED)
 
     def clean(self):
-        if not self.user.is_anonymous():
-            self.instance.poster = self.user
-        else:
-            self.instance.anonymous_key = get_anonymous_user_forum_key(self.user)
+        if not self.instance.pk:
+            # Only set user on post creation
+            if not self.user.is_anonymous():
+                self.instance.poster = self.user
+            else:
+                self.instance.anonymous_key = get_anonymous_user_forum_key(self.user)
         return super(PostForm, self).clean()
 
     def save(self, commit=True):
@@ -89,7 +94,9 @@ class PostForm(forms.ModelForm):
                 subject=self.cleaned_data['subject'],
                 approved=self.perm_handler.can_post_without_approval(self.forum, self.user),
                 content=self.cleaned_data['content'],
-                enable_signature=self.cleaned_data['enable_signature'])
+                enable_signature=False
+                # enable_signature=self.cleaned_data['enable_signature']
+            )
             if not self.user.is_anonymous():
                 post.poster = self.user
             else:
@@ -167,7 +174,7 @@ class TopicForm(PostForm):
 
     def clean(self):
         if self.cleaned_data.get('poll_question', None) \
-                and not self.cleaned_data.get('poll_max_options', None):
+            and not self.cleaned_data.get('poll_max_options', None):
             self.add_error(
                 'poll_max_options',
                 _('You must set the maximum number of poll options per user when creating polls'))

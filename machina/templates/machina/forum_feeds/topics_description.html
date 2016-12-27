@@ -2,4 +2,4 @@
 
 {{ obj.last_post.content.rendered|safe }}
 <br /><br />
-<i>{% trans "Posted by" %} {{ obj.poster.username }} - {{ obj.created }}</i>
+<i>{% trans "Posted by" %} {{ obj.poster.get_forum_title }} - {{ obj.created }}</i>

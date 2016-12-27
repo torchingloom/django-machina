@@ -32,6 +32,7 @@ class PermissionHandler(object):
     permission verifications on forums. It uses the ForumPermissionChecker
     class to perform these verifications.
     """
+
     def __init__(self):
         # This dictionary will store the forums that are granted for a specific
         # lit of permission codenames and a given user.
@@ -101,6 +102,12 @@ class PermissionHandler(object):
         """
         return self._perform_basic_permission_check(forum, user, 'can_post_stickies')
 
+    def can_manage_users_groups(self, user):
+        """
+        Given a forum, checks whether the user can append stickies to it.
+        """
+        return self._perform_basic_permission_check(Forum(id=-1), user, 'can_manage_users_groups')
+
     def can_add_announcements(self, forum, user):
         """
         Given a forum, checks whether the user can append announcements to it.
@@ -119,9 +126,9 @@ class PermissionHandler(object):
         """
         can_add_post = self._perform_basic_permission_check(
             topic.forum, user, 'can_reply_to_topics') and (
-                not topic.is_locked or
-                self._perform_basic_permission_check(
-                    topic.forum, user, 'can_reply_to_locked_topics'))
+                           not topic.is_locked or
+                           self._perform_basic_permission_check(
+                               topic.forum, user, 'can_reply_to_locked_topics'))
         return can_add_post
 
     def can_edit_post(self, post, user):
@@ -226,7 +233,7 @@ class PermissionHandler(object):
         # the related forum. Of course a user can subscribe only if he has not already subscribed to
         # the considered topic.
         return user.is_authenticated() and not topic.has_subscriber(user) \
-            and self._perform_basic_permission_check(topic.forum, user, 'can_read_forum')
+               and self._perform_basic_permission_check(topic.forum, user, 'can_read_forum')
 
     def can_unsubscribe_from_topic(self, topic, user):
         """
@@ -236,7 +243,7 @@ class PermissionHandler(object):
         # read the related forum. Of course a user can unsubscribe only if he is already a
         # a subscriber of the considered topic.
         return user.is_authenticated() and topic.has_subscriber(user) \
-            and self._perform_basic_permission_check(topic.forum, user, 'can_read_forum')
+               and self._perform_basic_permission_check(topic.forum, user, 'can_read_forum')
 
     # Moderation
 
@@ -297,14 +304,14 @@ class PermissionHandler(object):
         topics.
         """
         return self._perform_basic_permission_check(forum, user, 'can_edit_posts') \
-            and self._perform_basic_permission_check(forum, user, 'can_post_stickies')
+               and self._perform_basic_permission_check(forum, user, 'can_post_stickies')
 
     def can_update_topics_to_announces(self, forum, user):
         """
         Given a forum, checks whether the user can change its topic types to announces.
         """
         return self._perform_basic_permission_check(forum, user, 'can_edit_posts') \
-            and self._perform_basic_permission_check(forum, user, 'can_post_announcements')
+               and self._perform_basic_permission_check(forum, user, 'can_post_announcements')
 
     def can_approve_posts(self, forum, user):
         """
@@ -370,15 +377,16 @@ class PermissionHandler(object):
             per_forum_nongranted_user_perms = list(
                 filter(lambda p: not p.has_perm and p.forum is not None, user_perms))
 
-            user_granted_forum_ids = [p.forum_id for p in per_forum_granted_user_perms]
-            user_nongranted_forum_ids = [p.forum_id for p in per_forum_nongranted_user_perms]
+            user_granted_forum_ids = set([p.forum_id for p in per_forum_granted_user_perms])
+            user_nongranted_forum_ids = set([p.forum_id for p in per_forum_nongranted_user_perms]).difference(
+                user_granted_forum_ids)
 
             if not user.is_anonymous():
                 user_model = get_user_model()
                 # Get all the group permissions for the considered user.
                 group_perms = GroupForumPermission.objects \
                     .filter(**{
-                        'group__{0}'.format(user_model.groups.field.related_query_name()): user}) \
+                    'group__{0}'.format(user_model.groups.field.related_query_name()): user}) \
                     .filter(permission__codename__in=perm_codenames)
 
                 globally_granted_group_perms = list(
@@ -388,16 +396,17 @@ class PermissionHandler(object):
                 per_forum_nongranted_group_perms = list(
                     filter(lambda p: not p.has_perm and p.forum is not None, group_perms))
 
-                group_granted_forum_ids = [p.forum_id for p in per_forum_granted_group_perms]
-                group_nongranted_forum_ids = [p.forum_id for p in per_forum_nongranted_group_perms]
+                group_granted_forum_ids = set([p.forum_id for p in per_forum_granted_group_perms])
+                group_nongranted_forum_ids = set([p.forum_id for p in per_forum_nongranted_group_perms]).difference(
+                    group_granted_forum_ids)
 
                 if globally_granted_user_perms or globally_granted_group_perms:
                     forum_objects = forum_queryset.filter(
-                        ~Q(pk__in=(user_nongranted_forum_ids + group_nongranted_forum_ids)))
+                        ~Q(pk__in=(user_nongranted_forum_ids | group_nongranted_forum_ids)))
                 else:
                     forum_objects = forum_queryset.filter(
                         Q(pk__in=user_granted_forum_ids) | Q(pk__in=group_granted_forum_ids)) \
-                        .filter(~Q(pk__in=(user_nongranted_forum_ids + group_nongranted_forum_ids)))
+                        .filter(~Q(pk__in=(user_nongranted_forum_ids | group_nongranted_forum_ids)))
             else:
                 if globally_granted_user_perms:
                     forum_objects = forum_queryset.filter(~Q(pk__in=user_nongranted_forum_ids))
